@@ -8,6 +8,15 @@ Source: CSV files stored in Databricks Volumes
 Processing: PySpark Structured Streaming  
 Storage: Delta Lake (Lakehouse architecture)
 
+## Medallion Architecture:
+- Bronze Layer → Raw streaming ingestion
+- Silver Layer → Cleaned and transformed data
+- Gold Layer → Business aggregations and analytics
+
+## Additional Features:
+- Streaming checkpoints implemented for fault tolerance and recovery
+- Unity Catalog used for organizing schemas and Delta tables
+
 ## Datasets Used
 Customers  
 Drivers  
