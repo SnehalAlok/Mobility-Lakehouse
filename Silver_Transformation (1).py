@@ -4,6 +4,7 @@ from pyspark.sql.types import *
 from typing import List
 from pyspark.sql import DataFrame
 from pyspark.sql.window import Window
+from delta.tables import DeltaTable
 
 # COMMAND ----------
 
@@ -18,7 +19,14 @@ class transformations:
     def process_timestamp(self,df):
         df= df.withColumn("process_timestamp",current_timestamp())
         return df
-
+    def upsert(self,df,key_cols,table):
+        merge_condition =" AND ".join([f"src.{i} = tgt.{i}" for i in key_cols])
+        dlt_obj = DeltaTable.forName(spark,f"pysparkdbt.silver.{table}")
+        dlt_obj.alias("trg").merge(df.alias(src),merge_condition)\
+                            .whenMatchedUpdateAll(condition = f"src.{cdc} >= trg.{cdc}")\
+                            .whenNotMatchedInsertAll()\
+                            .execute()
+        return 1
 # COMMAND ----------
 
 # MAGIC %md
@@ -69,10 +77,14 @@ display(df_cust)
 
 # COMMAND ----------
 
-from delta.tables import DeltaTable
-if spark.catalog.tableExists("pysparkdbt.silver.customers"):
-  df.write.format("delta")\
+if not spark.catalog.tableExists("pysparkdbt.silver.customers"):
+  df_cust.write.format("delta")\
       .mode("append")\
       .saveAsTable("pysparkdbt.silver.customers")
 else:
-  df.write.format("delta")    
+  cust_obj.upsert(df_cust,[customer_id],'customers','last_updated_timestamp') 
+
+# COMMAND ----------
+
+%sql
+SELECT COUNT(*) FROM pysparkdbt.silver.customers
