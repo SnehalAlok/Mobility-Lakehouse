@@ -47,14 +47,14 @@ Vehicles
 - Deduplication using Window functions
 - Process timestamp tracking
 - Delta write operations in progress
-- Upsert/Merge logic in progress
+- Reusable Delta Lake upsert/merge utility implemented
+- CDC-based merge condition handling added
 
 ### Gold Layer
 - Planned 
 
 ## Future Work
 
-- Complete Delta merge/upsert implementation
 - Build Gold layer business aggregations
 - Add data quality validation checks
 - Optimize ingestion using Auto Loader
